@@ -1,0 +1,10 @@
+Segnet/dataset/val/frame190.jpg Segnet/dataset/valannot/frame190.png
+Segnet/dataset/val/frame191.jpg Segnet/dataset/valannot/frame191.png
+Segnet/dataset/val/frame192.jpg Segnet/dataset/valannot/frame192.png
+Segnet/dataset/val/frame193.jpg Segnet/dataset/valannot/frame193.png
+Segnet/dataset/val/frame194.jpg Segnet/dataset/valannot/frame194.png
+Segnet/dataset/val/frame195.jpg Segnet/dataset/valannot/frame195.png
+Segnet/dataset/val/frame196.jpg Segnet/dataset/valannot/frame196.png
+Segnet/dataset/val/frame197.jpg Segnet/dataset/valannot/frame197.png
+Segnet/dataset/val/frame198.jpg Segnet/dataset/valannot/frame198.png
+Segnet/dataset/val/frame199.jpg Segnet/dataset/valannot/frame199.png
