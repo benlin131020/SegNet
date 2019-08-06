@@ -98,4 +98,3 @@ Segnet/dataset/train/frame185.jpg Segnet/dataset/trainannot/frame185.png
 Segnet/dataset/train/frame186.jpg Segnet/dataset/trainannot/frame186.png
 Segnet/dataset/train/frame187.jpg Segnet/dataset/trainannot/frame187.png
 Segnet/dataset/train/frame188.jpg Segnet/dataset/trainannot/frame188.png
-Segnet/dataset/train/frame189.jpg Segnet/dataset/trainannot/frame189.png

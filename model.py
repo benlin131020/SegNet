@@ -48,40 +48,67 @@ def upsample(pooled, ind, ksize=[1, 2, 2, 1]):
 def segnet(x, training):
     conv1 = conv_batchnorm_relu(x, weights['wc1'], biases['bc1'], training=training)
     pool1, pool1_indices = tf.nn.max_pool_with_argmax(conv1, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
-    upsample1 = upsample(pool1, pool1_indices)
+    conv2 = conv_batchnorm_relu(pool1, weights['wc2'], biases['bc2'], training=training)
+    pool2, pool2_indices = tf.nn.max_pool_with_argmax(conv2, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
+    conv3 = conv_batchnorm_relu(pool2, weights['wc3'], biases['bc3'], training=training)
+    pool3, pool3_indices = tf.nn.max_pool_with_argmax(conv3, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
+    conv4 = conv_batchnorm_relu(pool3, weights['wc4'], biases['bc4'], training=training)
+    pool4, pool4_indices = tf.nn.max_pool_with_argmax(conv4, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
+    
+    upsample4 = upsample(pool4, pool4_indices)
+    deconv4 = deconv(upsample4, weights['wd4'], training=training)
+    upsample3 = upsample(deconv4, pool3_indices)
+    deconv3 = deconv(upsample3, weights['wd3'], training=training)
+    upsample2 = upsample(deconv3, pool2_indices)
+    deconv2 = deconv(upsample2, weights['wd2'], training=training)
+    upsample1 = upsample(deconv2, pool1_indices)
     deconv1 = deconv(upsample1, weights['wd1'], training=training)
+
     logits = tf.nn.conv2d(deconv1, weights['wo1'], [1, 1, 1, 1], padding='SAME')
     logits = tf.nn.bias_add(logits, biases['bo1'])
     prediction = tf.nn.softmax(logits)
 
     return logits, prediction
 
+def cal_loss(logits, label):
+    logits_flat = tf.reshape(logits, [-1, NUM_CLASSES])
+    label_flat = tf.reshape(label, [-1, NUM_CLASSES])
+    loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=logits_flat, labels=label_flat))
+    return loss
+
 weights = {
     'wc1': tf.Variable(tf.random_normal([7, 7, 3, 64])),
+    'wc2': tf.Variable(tf.random_normal([7, 7, 64, 64])),
+    'wc3': tf.Variable(tf.random_normal([7, 7, 64, 64])),
+    'wc4': tf.Variable(tf.random_normal([7, 7, 64, 64])),
+    'wd4': tf.Variable(tf.random_normal([7, 7, 64, 64])),
+    'wd3': tf.Variable(tf.random_normal([7, 7, 64, 64])),
+    'wd2': tf.Variable(tf.random_normal([7, 7, 64, 64])),
     'wd1': tf.Variable(tf.random_normal([7, 7, 64, 64])),
     'wo1': tf.Variable(tf.random_normal([1, 1, 64, NUM_CLASSES]))
 }
 
 biases = {
     'bc1': tf.Variable(tf.random_normal([64])),
+    'bc2': tf.Variable(tf.random_normal([64])),
+    'bc3': tf.Variable(tf.random_normal([64])),
+    'bc4': tf.Variable(tf.random_normal([64])),
     'bo1': tf.Variable(tf.random_normal([NUM_CLASSES]))
 }
 
-#x = tf.constant([[[[]]]])
-#x = tf.ones([1, 4, 4, 1])
-#x = tf.random_normal([5, 4, 4, 3])
-#x = x * 10
-
 if __name__ == "__main__":
-    #X = tf.placeholder(tf.float32, [BATCH_SIZE, INPUT_HEIGHT, INPUT_WIDTH, INPUT_CHANNEL])
-    #Y = tf.placeholder(tf.float32, [BATCH_SIZE, INPUT_HEIGHT * INPUT_WIDTH, NUM_CLASSES])
-    iterator = get_iterator()    
+    iterator = get_iterator()
+
     with tf.Session() as sess:
         X, Y = iterator.get_next()
         X, Y = sess.run([X, Y])
         logits, prediction = segnet(X, True)
+        cross_entropy_loss = cal_loss(logits, Y)
+        optimizer = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE)
+        train_op = optimizer.minimize(cross_entropy_loss)
         sess.run(tf.global_variables_initializer())
-        logits, prediction = sess.run([logits, prediction])
-        print(logits.shape, prediction.shape)
-        #print(logits, "end")
-        #print(prediction)
+        for epoch in range(EPOCHES):
+            for batch in range(BATCHES):
+                sess.run(train_op)
+            loss = sess.run(cross_entropy_loss)
+            print("Epoch%02d->" % (epoch+1), "loss:{:.9f}".format(loss))

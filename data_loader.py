@@ -25,7 +25,7 @@ def get_iterator():
     trainannot_filenames = filename_list(trainannot_path)
 
     dataset = tf.data.Dataset.from_tensor_slices((train_filenames, trainannot_filenames))
-    dataset = dataset.map(_parse_function).shuffle(buffer_size=1000).batch(BATCH_SIZE)
+    dataset = dataset.map(_parse_function).shuffle(buffer_size=1000).batch(BATCH_SIZE).repeat()
     iterator = dataset.make_one_shot_iterator()
     return iterator
 
