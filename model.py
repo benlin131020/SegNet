@@ -1,4 +1,6 @@
 import tensorflow as tf
+from data_loader import get_iterator
+from parameter import *
 
 def conv_batchnorm_relu(x, W, b, strides=1, training=False):
     conv = tf.nn.conv2d(x, W, strides=[1, strides, strides, 1], padding='SAME')
@@ -47,28 +49,39 @@ def segnet(x, training):
     conv1 = conv_batchnorm_relu(x, weights['wc1'], biases['bc1'], training=training)
     pool1, pool1_indices = tf.nn.max_pool_with_argmax(conv1, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
     upsample1 = upsample(pool1, pool1_indices)
-    deconv1 = deconv(upsample1, weights['wdc1'], training=training)
+    deconv1 = deconv(upsample1, weights['wd1'], training=training)
+    logits = tf.nn.conv2d(deconv1, weights['wo1'], [1, 1, 1, 1], padding='SAME')
+    logits = tf.nn.bias_add(logits, biases['bo1'])
+    prediction = tf.nn.softmax(logits)
 
-    return deconv1
+    return logits, prediction
 
 weights = {
     'wc1': tf.Variable(tf.random_normal([7, 7, 3, 64])),
-    'wdc1': tf.Variable(tf.random_normal([7, 7, 64, 2]))
+    'wd1': tf.Variable(tf.random_normal([7, 7, 64, 64])),
+    'wo1': tf.Variable(tf.random_normal([1, 1, 64, NUM_CLASSES]))
 }
 
 biases = {
     'bc1': tf.Variable(tf.random_normal([64])),
+    'bo1': tf.Variable(tf.random_normal([NUM_CLASSES]))
 }
 
 #x = tf.constant([[[[]]]])
 #x = tf.ones([1, 4, 4, 1])
-x = tf.random_normal([5, 4, 4, 3])
-x = x * 10
+#x = tf.random_normal([5, 4, 4, 3])
+#x = x * 10
 
-with tf.Session() as sess:
-    logits = segnet(x, True)
-    prediction = tf.nn.softmax(logits)
-    sess.run(tf.global_variables_initializer())
-    logits, prediction = sess.run([logits, prediction])
-    print(logits.shape, prediction.shape)
-    print(prediction)
+if __name__ == "__main__":
+    #X = tf.placeholder(tf.float32, [BATCH_SIZE, INPUT_HEIGHT, INPUT_WIDTH, INPUT_CHANNEL])
+    #Y = tf.placeholder(tf.float32, [BATCH_SIZE, INPUT_HEIGHT * INPUT_WIDTH, NUM_CLASSES])
+    iterator = get_iterator()    
+    with tf.Session() as sess:
+        X, Y = iterator.get_next()
+        X, Y = sess.run([X, Y])
+        logits, prediction = segnet(X, True)
+        sess.run(tf.global_variables_initializer())
+        logits, prediction = sess.run([logits, prediction])
+        print(logits.shape, prediction.shape)
+        #print(logits, "end")
+        #print(prediction)
