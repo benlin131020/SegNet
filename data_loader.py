@@ -19,11 +19,8 @@ def _parse_function(image_name, label_name):
     return image, label
 
 def get_iterator():
-    train_path = './dataset/train/'
-    trainannot_path = './dataset/trainannot'
-    train_filenames = filename_list(train_path)
-    trainannot_filenames = filename_list(trainannot_path)
-
+    train_filenames = filename_list(TRAIN_PATH)
+    trainannot_filenames = filename_list(TRAINANNOT_PATH)
     dataset = tf.data.Dataset.from_tensor_slices((train_filenames, trainannot_filenames))
     dataset = dataset.map(_parse_function).shuffle(buffer_size=1000).batch(BATCH_SIZE).repeat()
     iterator = dataset.make_one_shot_iterator()

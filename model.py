@@ -5,7 +5,8 @@ from parameter import *
 def conv_batchnorm_relu(x, W, b, strides=1, training=False):
     conv = tf.nn.conv2d(x, W, strides=[1, strides, strides, 1], padding='SAME')
     conv = tf.nn.bias_add(conv, b)
-    conv = tf.layers.batch_normalization(conv, training=training)
+    conv = tf.keras.layers.BatchNormalization()(conv)
+    #conv = tf.layers.batch_normalization(conv, training=training)
     return tf.nn.relu(conv)
 
 def deconv(x, W, strides=1, training=False):
@@ -77,23 +78,23 @@ def cal_loss(logits, label):
     return loss
 
 weights = {
-    'wc1': tf.Variable(tf.random_normal([7, 7, 3, 64])),
-    'wc2': tf.Variable(tf.random_normal([7, 7, 64, 64])),
-    'wc3': tf.Variable(tf.random_normal([7, 7, 64, 64])),
-    'wc4': tf.Variable(tf.random_normal([7, 7, 64, 64])),
-    'wd4': tf.Variable(tf.random_normal([7, 7, 64, 64])),
-    'wd3': tf.Variable(tf.random_normal([7, 7, 64, 64])),
-    'wd2': tf.Variable(tf.random_normal([7, 7, 64, 64])),
-    'wd1': tf.Variable(tf.random_normal([7, 7, 64, 64])),
-    'wo1': tf.Variable(tf.random_normal([1, 1, 64, NUM_CLASSES]))
+    'wc1': tf.Variable(tf.random_normal([7, 7, 3, 64]), name='wc1'),
+    'wc2': tf.Variable(tf.random_normal([7, 7, 64, 64]), name='wc2'),
+    'wc3': tf.Variable(tf.random_normal([7, 7, 64, 64]), name='wc3'),
+    'wc4': tf.Variable(tf.random_normal([7, 7, 64, 64]), name='wc4'),
+    'wd4': tf.Variable(tf.random_normal([7, 7, 64, 64]), name='wd4'),
+    'wd3': tf.Variable(tf.random_normal([7, 7, 64, 64]), name='wd3'),
+    'wd2': tf.Variable(tf.random_normal([7, 7, 64, 64]), name='wd2'),
+    'wd1': tf.Variable(tf.random_normal([7, 7, 64, 64]), name='wd1'),
+    'wo1': tf.Variable(tf.random_normal([1, 1, 64, NUM_CLASSES]), name='wo1')
 }
 
 biases = {
-    'bc1': tf.Variable(tf.random_normal([64])),
-    'bc2': tf.Variable(tf.random_normal([64])),
-    'bc3': tf.Variable(tf.random_normal([64])),
-    'bc4': tf.Variable(tf.random_normal([64])),
-    'bo1': tf.Variable(tf.random_normal([NUM_CLASSES]))
+    'bc1': tf.Variable(tf.random_normal([64]), name='bc1'),
+    'bc2': tf.Variable(tf.random_normal([64]), name='bc2'),
+    'bc3': tf.Variable(tf.random_normal([64]), name='bc3'),
+    'bc4': tf.Variable(tf.random_normal([64]), name='bc4'),
+    'bo1': tf.Variable(tf.random_normal([NUM_CLASSES]), name='bo1')
 }
 
 if __name__ == "__main__":
