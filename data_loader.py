@@ -23,12 +23,13 @@ def get_iterator():
     trainannot_filenames = filename_list(TRAINANNOT_PATH)
     dataset = tf.data.Dataset.from_tensor_slices((train_filenames, trainannot_filenames))
     dataset = dataset.map(_parse_function).shuffle(buffer_size=1000).batch(BATCH_SIZE).repeat()
-    iterator = dataset.make_one_shot_iterator()
+    iterator = dataset.make_initializable_iterator()
     return iterator
 
 if __name__ == "__main__":
     iterator = get_iterator()
     with tf.Session() as sess:
+        sess.run(iterator.initializer)
         X, Y = iterator.get_next()
         sess.run(tf.global_variables_initializer())
         x, y = sess.run([X, Y])
