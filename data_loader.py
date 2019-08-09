@@ -18,11 +18,15 @@ def _parse_function(image_name, label_name):
     label = tf.one_hot(label_flat, NUM_CLASSES)
     return image, label
 
-def get_iterator():
-    train_filenames = filename_list(TRAIN_PATH)
-    trainannot_filenames = filename_list(TRAINANNOT_PATH)
-    dataset = tf.data.Dataset.from_tensor_slices((train_filenames, trainannot_filenames))
-    dataset = dataset.map(_parse_function).shuffle(buffer_size=1000).batch(BATCH_SIZE).repeat()
+def get_iterator(training=True):
+    if training:
+        img_filenames = filename_list(TRAIN_PATH)
+        annot_filenames = filename_list(TRAINANNOT_PATH)
+    else:
+        img_filenames = filename_list(TEST_PATH)
+        annot_filenames = filename_list(TESTANNOT_PATH)
+    dataset = tf.data.Dataset.from_tensor_slices((img_filenames, annot_filenames))
+    dataset = dataset.map(_parse_function).shuffle(buffer_size=100).batch(BATCH_SIZE).repeat()
     iterator = dataset.make_initializable_iterator()
     return iterator
 

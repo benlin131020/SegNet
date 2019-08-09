@@ -77,6 +77,13 @@ def cal_loss(logits, label):
     loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=logits_flat, labels=label_flat))
     return loss
 
+def cal_accuracy(pred, label):
+    pred_flat = tf.reshape(pred, [-1, NUM_CLASSES])
+    label_flat = tf.reshape(label, [-1, NUM_CLASSES])
+    correct_prediction = tf.equal(tf.argmax(pred_flat, 1), tf.argmax(label_flat, 1))
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+    return accuracy
+
 weights = {
     'wc1': tf.Variable(tf.random_normal([7, 7, 3, 64]), name='wc1'),
     'wc2': tf.Variable(tf.random_normal([7, 7, 64, 64]), name='wc2'),
