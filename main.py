@@ -1,15 +1,15 @@
 import tensorflow as tf
 from model import segnet, cal_loss, cal_accuracy
-from data_loader import get_iterator
+from data_loader import get_train_iterator
 from parameter import *
 
-iterator = get_iterator(training=True)
+iterator = get_train_iterator()
 
 with tf.Session() as sess:
     sess.run(iterator.initializer)
     X, Y = iterator.get_next()
-    X.set_shape([BATCH_SIZE, INPUT_HEIGHT, INPUT_WIDTH, INPUT_CHANNEL])
-    Y.set_shape([BATCH_SIZE, INPUT_HEIGHT * INPUT_WIDTH, NUM_CLASSES])
+    X.set_shape([None, INPUT_HEIGHT, INPUT_WIDTH, INPUT_CHANNEL])
+    Y.set_shape([None, INPUT_HEIGHT * INPUT_WIDTH, NUM_CLASSES])
     logits, prediction = segnet(X, True)
     cross_entropy_loss = cal_loss(logits, Y)
     accuracy = cal_accuracy(prediction, Y)

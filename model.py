@@ -1,5 +1,5 @@
 import tensorflow as tf
-from data_loader import get_iterator
+from data_loader import get_train_iterator
 from parameter import *
 
 def conv_batchnorm_relu(x, W, b, strides=1, training=False):
@@ -29,15 +29,15 @@ def upsample(pooled, ind, ksize=[1, 2, 2, 1]):
     # Get the the shape of the tensor in th form of a list
     input_shape = pooled.get_shape().as_list()
     # Determine the output shape
-    output_shape = (input_shape[0], input_shape[1] * ksize[1], input_shape[2] * ksize[2], input_shape[3])
+    output_shape = (BATCH_SIZE, input_shape[1] * ksize[1], input_shape[2] * ksize[2], input_shape[3])
     # Ceshape into one giant tensor for better workability
-    pooled_ = tf.reshape(pooled, [input_shape[0] * input_shape[1] * input_shape[2] * input_shape[3]])
+    pooled_ = tf.reshape(pooled, [BATCH_SIZE * input_shape[1] * input_shape[2] * input_shape[3]])
     # The indices in argmax are flattened, so that a maximum value at position [b, y, x, c] becomes flattened index ((b * height + y) * width + x) * channels + c
     # Create a single unit extended cuboid of length bath_size populating it with continous natural number from zero to batch_size
-    batch_range = tf.reshape(tf.range(output_shape[0], dtype=ind.dtype), shape=[input_shape[0], 1, 1, 1])
+    batch_range = tf.reshape(tf.range(output_shape[0], dtype=ind.dtype), shape=[BATCH_SIZE, 1, 1, 1])
     b = tf.ones_like(ind) * batch_range
-    b_ = tf.reshape(b, [input_shape[0] * input_shape[1] * input_shape[2] * input_shape[3], 1])
-    ind_ = tf.reshape(ind, [input_shape[0] * input_shape[1] * input_shape[2] * input_shape[3], 1])
+    b_ = tf.reshape(b, [BATCH_SIZE * input_shape[1] * input_shape[2] * input_shape[3], 1])
+    ind_ = tf.reshape(ind, [BATCH_SIZE * input_shape[1] * input_shape[2] * input_shape[3], 1])
     ind_ = tf.concat([b_, ind_],1)
     ref = tf.Variable(tf.zeros([output_shape[0], output_shape[1] * output_shape[2] * output_shape[3]]))
     # Update the sparse matrix with the pooled values , it is a batch wise operation
@@ -105,7 +105,7 @@ biases = {
 }
 
 if __name__ == "__main__":
-    iterator = get_iterator()
+    iterator = get_train_iterator()
 
     with tf.Session() as sess:
         X, Y = iterator.get_next()
